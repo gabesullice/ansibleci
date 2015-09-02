@@ -1,0 +1,47 @@
+---
+
+- hosts: develop
+  remote_user: 401e
+  roles:
+    - apache      # remove for plesk
+    - mysql       # remove for plesk
+    - application
+  vars:
+    # Project
+    site_name: cga.e3develop.com # Directory where htdocs and application will live
+    git_org: elevatedthird  # Name of the git user/organization
+    git_repo: cga           # Name of the git repository
+    drupal_root: docroot    # Dir which has index.php
+    git_branch: develop     # This is the branch that will be deployed
+    max_releases: 10        # Number of past releases to keep
+
+    # Host mysql
+    db_name: cga  # name of the db
+    db_user: cga  # name of the db user
+    db_pass: 2HiFyXFyXQhn  # db password
+
+    mysql_login_host: localhost
+
+    # Host apache
+    site_domain: cga.e3develop.com      # domain name to put in vhost. Should NOT have www.
+    env_vars:
+      - AH_SITE_ENVIRONMENT blackmesh
+      - AH_SITE_ENVIRONMENT dev
+
+    # Host filesystem
+    htdocs: htdocs            # document root expected by apache
+    htsdocs: htsdocs          # ibid.
+    file_owner: 401e
+    file_group: apache
+    sites_directory: /var/www
+
+  tasks:
+    - name: slack notification
+      local_action:
+        module: slack
+        channel: "#cga"
+        msg: "{{ lookup('env', 'USER') }} deployed to dev"
+        token: T06FK6FAM/B08M3TZTR/68TnuZL3ikvRfpTUzdNOH4R7
+        validate_certs: FALSE
+      tags:
+        - deploy
